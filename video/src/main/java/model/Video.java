@@ -2,13 +2,13 @@ package model;
 
 public class Video {
 	 private String linkId;
-	 private String titre;
+	 private String title;
 	 private long categorieId;
 	 
-	public Video(String linkId, String titre, long categorieId) {
+	public Video(String linkId, String title, long categorieId) {
 		super();
 		this.linkId = linkId;
-		this.titre = titre;
+		this.title = title;
 		this.categorieId = categorieId;
 	}
 
@@ -20,12 +20,12 @@ public class Video {
 		this.linkId = linkId;
 	}
 
-	public String getTitre() {
-		return titre;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setTitre(String titre) {
-		this.titre = titre;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public long getCategorieId() {
@@ -38,7 +38,7 @@ public class Video {
 
 	@Override
 	public String toString() {
-		return "Video [linkId=" + linkId + ", titre=" + titre + ", categorieId=" + categorieId + "]";
+		return "Video [linkId=" + linkId + ", title=" + title + ", categorieId=" + categorieId + "]";
 	}
 	 
 	

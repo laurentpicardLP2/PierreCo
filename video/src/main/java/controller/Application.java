@@ -16,18 +16,19 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 
 import model.Categorie;
 import model.Video;
-import webview.Main;
-import javax.management.Query;
+import webview.*;
 
+import javax.management.Query;
+import menu.GestionMenu;
 
 @SpringBootApplication
 public class Application implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
-   
 
     public static void main(String args[]) {
-        SpringApplication.run(Application.class, args);
+    	SpringApplication.run(Application.class, args);   
+         
     }
 
     @Autowired
@@ -35,37 +36,56 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... strings) throws Exception {
-    	//createTable();
-    	//insertValues();
+    	int choix;
+    	createTable();
+    	insertValues();
+    	new Thread(new Webviewer()).start();
     	
-		
-    	
-    	//Main.MainVideo();
-    	//Main.launch("uQITWbAaDx0");args
-    	
-    	List<Video> videos= findBySurname("uQITWbAaDx0");
-    	for (Video video : videos) {
-    		log.info(video.toString());
-    		Main.MainVideo(video.getLinkId());
-    	}
+    	do {
+    		choix = GestionMenu.AffichMenu();
+    		switch(choix) {
+    		case 1 : insertVideo();
+    			break;
+    		case 2 : findByTitle();
+    			break;
+    		}
+    		
+    	}while(choix != 3);
 
     	
-
-    	/*List<Customer> customers= findBySurname("Josh");
-    	for (Customer customer : customers) {
-    		log.info(customer.toString());
-    		insertCustomer(customer);
-    	}*/
-
     }
-
-    /*private void insertValues() {
-    	insertCustomer(new Customer(1, "John","Woo"));
-    	insertCustomer(new Customer(2, "Josh", "Long"));
-    	insertCustomer(new Customer(3, "Jeff"," Dean"));
-    	insertCustomer(new Customer(4, "Josh", "Bloch"));
-		
-	}*/
+    
+    public void insertVideo() {
+    	
+    }
+    
+    public void findByTitle() throws InterruptedException{
+    	String title = GestionMenu.showVideo();
+    	List<Video> videos =  jdbcTemplate.query(
+                "select * from videos WHERE title like ?", new Object[] {title },
+                new VideoRowMapper());
+    	Video video = videos.get(0);
+    	
+    	//Webviewer.main(null);
+    	
+   
+    	Thread thread = new Thread(new Runnable() {
+   		 @Override
+            public void run() {
+   			String[] args = new String[1];
+			args[0] = video.getLinkId();
+			//Webviewer.main(args); //.main(video.getLinkId());
+			Webviewer.setID(Webviewer.THOVEX_ID);
+			
+   		 }
+   	 });
+   	 //thread.setDaemon(true);
+        thread.start();
+    	
+    	
+    	//Main.MainVideo(video.getLinkId());
+    	
+    }
 
 	public void createTable() {
     	 log.info("Creating tables");
@@ -75,29 +95,13 @@ public class Application implements CommandLineRunner {
          jdbcTemplate.execute("DROP TABLE IF EXISTS categories");
          jdbcTemplate.execute("CREATE TABLE categories(id Int  Auto_increment  NOT NULL ,intitule Varchar (255) NOT NULL,CONSTRAINT categories_PK PRIMARY KEY (id))ENGINE=InnoDB;");
          
-         jdbcTemplate.execute("CREATE TABLE videos(linkId Varchar (255) NOT NULL ,titre Varchar (255) NOT NULL ,categorieId          Int NOT NULL,CONSTRAINT videos_PK PRIMARY KEY (linkId),CONSTRAINT videos_categories_FK FOREIGN KEY (categorieId) REFERENCES categories(id))ENGINE=InnoDB;");
+         jdbcTemplate.execute("CREATE TABLE videos(linkId Varchar (255) NOT NULL ,title Varchar (255) NOT NULL ,categorieId          Int NOT NULL,CONSTRAINT videos_PK PRIMARY KEY (linkId),CONSTRAINT videos_categories_FK FOREIGN KEY (categorieId) REFERENCES categories(id))ENGINE=InnoDB;");
     }
     /**
      * @param newCusto : the Customer to be added in database
      */
-   /* public void insertCustomer(Customer newCusto) {
-    	jdbcTemplate.update(
-    			"INSERT INTO customers(first_name, last_name) VALUES (?,?)",
-    			newCusto.getFirstName(),
-    			newCusto.getLastName()
-    			);
-    }
-    
-    public List<Customer> findBySurname(String surname){
-   	 log.info(MessageFormat.format("Querying for customer records where first_name = {0}:", surname));
-
-        return jdbcTemplate.query(
-                "SELECT id, first_name, last_name FROM customers WHERE first_name = ?", new Object[] {surname },
-                new CustomerRowMapper());
-   } */
 	
 	public void insertValues() {
-		//List<Categorie> customers= findBySurname("Josh");
 		Categorie cat1 = new Categorie(1, "Comedie");
     	Categorie cat2 = new Categorie(2, "Science-fiction");
     	Categorie cat3 = new Categorie(3, "Aventure");
@@ -126,29 +130,12 @@ public class Application implements CommandLineRunner {
 	
 	public void insertVideos(Video newVid) {
 		jdbcTemplate.update(
-    			"INSERT INTO videos(linkId, titre, categorieId) VALUES (?, ?, ?)",
+    			"INSERT INTO videos(linkId, title, categorieId) VALUES (?, ?, ?)",
     			newVid.getLinkId(),
-    			newVid.getTitre(),
+    			newVid.getTitle(),
     			newVid.getCategorieId()
     			);
-	}
-	
-/*	 public List<Video> findBySurname(String surname){
-      	 log.info(MessageFormat.format("Querying for customer records where first_name = {0}:", surname));
-
-           return jdbcTemplate.query(
-                   "select * from Video WHERE intitule linkId ?", new Object[] {surname },
-                   new VideoRowMapper());
-      }*/
-	
-	 public List<Video> findBySurname(String surname){
-      	 log.info(MessageFormat.format("Querying for customer records where first_name = {0}:", surname));
-
-           return jdbcTemplate.query(
-                   "select * from videos WHERE linkId like ?", new Object[] {surname },
-                   new VideoRowMapper());
-      }
-	
+	}	
 	
 
 }
